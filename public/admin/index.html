@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章管理 - 却nuy的博客</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'Noto Sans SC', sans-serif; background: #faf8f5; color: #2d2830; min-height: 100vh; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+/* 登录 */
+.login-box { max-width: 360px; margin: 100px auto; text-align: center; }
+.login-box h1 { font-family: 'Noto Serif SC', serif; font-size: 2rem; margin-bottom: 8px; }
+.login-box p { color: #8c8690; font-size: .9rem; margin-bottom: 24px; }
+.login-box input { width: 100%; padding: 12px 16px; border: 1px solid #d5cfc8; border-radius: 12px; font-size: .9rem; margin-bottom: 12px; background: #fff; }
+.login-box button { width: 100%; padding: 12px; background: #7c6fa0; color: #fff; border: none; border-radius: 12px; font-size: 1rem; cursor: pointer; font-weight: 600; }
+.login-box button:hover { background: #6b5e8f; }
+.login-box .hint { font-size: .78rem; color: #8c8690; margin-top: 12px; }
+
+/* 主界面 */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid #e8e2d9; }
+.header h1 { font-family: 'Noto Serif SC', serif; font-size: 1.5rem; }
+.header a { color: #7c6fa0; text-decoration: none; font-size: .9rem; }
+.header a:hover { text-decoration: underline; }
+
+.post-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.post-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #fff; border: 1px solid #e8e2d9; border-radius: 12px; cursor: pointer; transition: all .2s; }
+.post-item:hover { border-color: #7c6fa0; box-shadow: 0 4px 16px rgba(124,111,160,.1); }
+.post-item-title { font-weight: 600; font-size: 1rem; }
+.post-item-meta { font-size: .8rem; color: #8c8690; margin-top: 4px; }
+.post-item-actions { display: flex; gap: 8px; }
+.post-item-actions button { padding: 6px 14px; border: 1px solid #d5cfc8; border-radius: 8px; background: #fff; cursor: pointer; font-size: .8rem; transition: all .2s; }
+.post-item-actions button:hover { border-color: #7c6fa0; color: #7c6fa0; }
+.post-item-actions .del:hover { border-color: #c0392b; color: #c0392b; }
+
+.btn-new { display: inline-block; padding: 10px 24px; background: #7c6fa0; color: #fff; border: none; border-radius: 12px; font-size: .95rem; cursor: pointer; font-weight: 600; margin-bottom: 24px; text-decoration: none; }
+.btn-new:hover { background: #6b5e8f; }
+
+/* 编辑器 */
+.editor { max-width: 900px; margin: 0 auto; padding: 24px; }
+.editor input, .editor textarea { width: 100%; padding: 12px 16px; border: 1px solid #d5cfc8; border-radius: 12px; font-size: .95rem; margin-bottom: 12px; font-family: inherit; background: #fff; }
+.editor input:focus, .editor textarea:focus { outline: none; border-color: #7c6fa0; }
+.editor textarea { min-height: 400px; line-height: 1.8; resize: vertical; font-family: 'Noto Serif SC', serif; font-size: 1rem; }
+.editor .row { display: flex; gap: 12px; }
+.editor .row > * { flex: 1; }
+.editor .actions { display: flex; gap: 12px; margin-top: 16px; }
+.editor .actions button { padding: 10px 28px; border: none; border-radius: 12px; font-size: .95rem; cursor: pointer; font-weight: 600; }
+.editor .btn-save { background: #7c6fa0; color: #fff; }
+.editor .btn-save:hover { background: #6b5e8f; }
+.editor .btn-cancel { background: #e8e2d9; color: #2d2830; }
+.editor .btn-cancel:hover { background: #d5cfc8; }
+.editor label { display: block; font-size: .85rem; color: #5c5660; margin-bottom: 4px; font-weight: 500; }
+
+/* 工具栏 */
+.toolbar { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; padding: 8px; background: #f5f0eb; border-radius: 10px; border: 1px solid #e8e2d9; }
+.toolbar button { padding: 5px 10px; border: 1px solid #d5cfc8; background: #fff; border-radius: 6px; cursor: pointer; font-size: .8rem; font-family: inherit; transition: all .15s; color: #2d2830; }
+.toolbar button:hover { background: #7c6fa0; color: #fff; border-color: #7c6fa0; }
+.toolbar .sep { width: 1px; background: #d5cfc8; margin: 0 4px; }
+.toolbar .preview-btn { margin-left: auto; }
+
+/* 预览区 */
+.preview-box { min-height: 200px; padding: 20px; background: #fff; border: 1px solid #d5cfc8; border-radius: 12px; font-family: 'Noto Serif SC', serif; font-size: 1rem; line-height: 1.9; color: #2d2830; display: none; }
+.preview-box.show { display: block; }
+.preview-box h2 { font-size: 1.3rem; margin: 24px 0 12px; }
+.preview-box h3 { font-size: 1.1rem; margin: 20px 0 8px; }
+.preview-box p { margin-bottom: 14px; }
+.preview-box blockquote { margin: 16px 0; padding: 12px 20px; border-left: 3px solid #7c6fa0; background: rgba(124,111,160,.06); color: #5c5660; }
+.preview-box ul, .preview-box ol { margin: 8px 0; padding-left: 1.5em; }
+.preview-box li { margin-bottom: 4px; }
+.preview-box code { background: #f5f0eb; padding: 2px 6px; border-radius: 4px; font-size: .9em; }
+.preview-box pre { background: #f5f0eb; padding: 16px; border-radius: 8px; overflow-x: auto; }
+.preview-box a { color: #7c6fa0; }
+
+.toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #2d2830; color: #fff; padding: 10px 24px; border-radius: 20px; font-size: .85rem; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+.hidden { display: none !important; }
+.btn-tab { padding: 8px 20px; border: 1px solid #d5cfc8; background: #fff; border-radius: 20px; cursor: pointer; font-size: .85rem; transition: all .2s; }
+.btn-tab.active { background: #7c6fa0; color: #fff; border-color: #7c6fa0; }
+.btn-tab:hover:not(.active) { border-color: #7c6fa0; color: #7c6fa0; }
+
+/* 背景图管理 */
+.bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.bg-card { background: #fff; border: 1px solid #e8e2d9; border-radius: 12px; overflow: hidden; transition: all .2s; cursor: default; }
+.bg-card:hover { border-color: #7c6fa0; box-shadow: 0 4px 16px rgba(124,111,160,.1); }
+.bg-card-thumb { width: 100%; height: 130px; object-fit: cover; display: block; background: #f5f0eb; }
+.bg-card-info { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.bg-card-name { font-size: .78rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.bg-card-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.bg-card-actions button { padding: 3px 8px; border: 1px solid #d5cfc8; border-radius: 6px; background: #fff; cursor: pointer; font-size: .7rem; transition: all .15s; }
+.bg-card-actions .del:hover { border-color: #c0392b; color: #c0392b; }
+.bg-upload-area { border: 2px dashed #d5cfc8; border-radius: 12px; padding: 32px; text-align: center; color: #8c8690; cursor: pointer; transition: all .2s; margin-bottom: 16px; }
+.bg-upload-area:hover { border-color: #7c6fa0; color: #7c6fa0; background: rgba(124,111,160,.03); }
+.bg-upload-area .icon { font-size: 2rem; margin-bottom: 8px; }
+
+</style>
+</head>
+<body>
+
+<!-- 登录 -->
+<div id="loginView" class="login-box">
+    <h1>却nuy CMS</h1>
+    <p id="loginMsg">正在检测本地后端...</p>
+    <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <button onclick="login()">登 录</button>
+    <p class="hint" id="loginHint">Token 只需 <b>repo</b> 权限。<br>在 <a href="https://github.com/settings/tokens" target="_blank">GitHub Token 设置</a> 创建。</p>
+</div>
+
+<!-- 文章列表 -->
+<div id="listView" class="container hidden">
+    <div class="header">
+        <h1 id="listTitle">📝 文章管理</h1>
+        <div>
+            <a href="https://quenuy.top" target="_blank">查看站点 →</a>
+            &nbsp;&nbsp;
+            <a href="#" onclick="logout()">退出</a>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button id="tabPosts" class="btn-tab active" onclick="switchTab('posts')">文章</button>
+        <button id="tabPages" class="btn-tab" onclick="switchTab('pages')">页面（关于/杂物/友链）</button>
+        <button id="tabBg" class="btn-tab" onclick="switchTab('bg')">🖼 背景图</button>
+    </div>
+    <button class="btn-new" id="btnNew" onclick="newPost()">+ 写新文章</button>
+    <div id="postList" class="post-list">加载中...</div>
+    <!-- 背景图管理 -->
+    <div id="bgView" class="hidden">
+        <div class="bg-upload-area" id="bgUploadArea" onclick="document.getElementById('bgFileInput').click()">
+            <div class="icon">📷</div>
+            <div>点击上传新背景图（支持 jpg/png/webp，建议 1920×1080）</div>
+            <div style="font-size:.75rem;margin-top:4px;opacity:.7">上传后自动命名并同步到站点</div>
+        </div>
+        <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="uploadBgImage(this)">
+        <div class="bg-grid" id="bgGrid">加载中...</div>
+    </div>
+</div>
+
+<!-- 文章编辑器 -->
+<div id="editorView" class="editor hidden">
+    <div class="header">
+        <h1 id="editorTitle">写文章</h1>
+        <a href="#" onclick="backToList()">← 返回列表</a>
+    </div>
+    <label>标题</label>
+    <input type="text" id="titleInput" placeholder="文章标题">
+    <div class="row">
+        <div><label>日期</label><input type="date" id="dateInput"></div>
+        <div><label>URL 别名</label><input type="text" id="slugInput" placeholder="英文短名，如 cicero-on-laws"></div>
+    </div>
+    <div class="row">
+        <div><label>标签（逗号分隔）</label><input type="text" id="tagsInput" placeholder="哲学, 阅读"></div>
+        <div><label>阅读时长</label><input type="text" id="readTimeInput" placeholder="5 分钟阅读"></div>
+    </div>
+    <label>摘要</label>
+    <input type="text" id="excerptInput" placeholder="文章摘要，显示在首页卡片中">
+    <div class="row">
+        <div><label>封面图URL</label><input type="text" id="coverInput" placeholder="https://... 文章封面图链接"></div>
+    </div>
+    <label>正文</label>
+    <!-- 格式化工具栏 -->
+    <div class="toolbar">
+        <button onclick="insertMD('## ')" title="二级标题">H2</button>
+        <button onclick="insertMD('### ')" title="三级标题">H3</button>
+        <span class="sep"></span>
+        <button onclick="wrapMD('**')" title="加粗"><b>B</b></button>
+        <button onclick="wrapMD('*')" title="斜体"><i>I</i></button>
+        <button onclick="wrapMD('`')" title="行内代码">&lt;/&gt;</button>
+        <span class="sep"></span>
+        <button onclick="lineMD('> ')" title="引用">❝</button>
+        <button onclick="lineMD('- ')" title="无序列表">•</button>
+        <button onclick="lineMD('1. ')" title="有序列表">1.</button>
+        <span class="sep"></span>
+        <button onclick="insertLink()" title="插入链接">🔗</button>
+        <button onclick="lineMD('---')" title="分隔线">—</button>
+        <button class="preview-btn" onclick="togglePreview()" title="预览">👁 预览</button>
+        <button onclick="uploadImage()" title="上传图片">📷</button>
+    </div>
+    <textarea id="bodyInput" placeholder="直接写正文，用上方工具栏快速排版..."></textarea>
+    <div id="previewBox" class="preview-box"></div>
+    <div class="actions">
+        <button class="btn-save" onclick="savePost()">💾 保存并发布</button>
+        <button class="btn-cancel" onclick="backToList()">取消</button>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== 状态 =====
+let token = localStorage.getItem('cms_token');
+let currentFile = null;
+let posts = [];
+let currentTab = 'posts';
+let pages = [];
+let API_BASE = ''; // 本地后端地址，为空则用GitHub API
+
+// 检测本地后端
+async function checkLocal() {
+    try {
+        var r = await fetch('http://localhost:8765/api/posts');
+        if (r.ok) { API_BASE = 'http://localhost:8765'; console.log('✅ 本地后端已连接'); return true; }
+    } catch(e) {}
+    console.log('⚠️ 使用 GitHub API');
+    return false;
+}
+
+// ===== Tab 切换 =====
+function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabPosts').classList.toggle('active', tab === 'posts');
+    document.getElementById('tabPages').classList.toggle('active', tab === 'pages');
+    document.getElementById('tabBg').classList.toggle('active', tab === 'bg');
+    var postList = document.getElementById('postList');
+    var bgView = document.getElementById('bgView');
+    var btnNew = document.getElementById('btnNew');
+    if (tab === 'posts') {
+        document.getElementById('listTitle').textContent = '📝 文章管理';
+        btnNew.textContent = '+ 写新文章';
+        btnNew.onclick = newPost;
+        btnNew.style.display = '';
+        postList.classList.remove('hidden');
+        bgView.classList.add('hidden');
+        loadPosts();
+    } else if (tab === 'pages') {
+        document.getElementById('listTitle').textContent = '📄 页面管理';
+        btnNew.textContent = '编辑选中页面';
+        btnNew.onclick = function() {};
+        btnNew.style.display = 'none';
+        postList.classList.remove('hidden');
+        bgView.classList.add('hidden');
+        loadPages();
+    } else if (tab === 'bg') {
+        document.getElementById('listTitle').textContent = '🖼 背景图管理';
+        btnNew.style.display = 'none';
+        postList.classList.add('hidden');
+        bgView.classList.remove('hidden');
+        loadBgImages();
+    }
+}
+
+// ===== 登录 =====
+async function tryLogin() {
+    if (await checkLocal()) {
+        document.getElementById('loginMsg').innerHTML = '✅ 本地后端已连接 · 无需登录';
+        document.getElementById('tokenInput').style.display = 'none';
+        document.querySelector('#loginView button').style.display = 'none';
+        document.getElementById('loginHint').style.display = 'none';
+        showList();
+        return;
+    }
+    document.getElementById('loginMsg').textContent = '使用 GitHub Personal Access Token 登录';
+    if (token) showList();
+}
+tryLogin();
+restoreDraft();
+
+function login() {
+    token = document.getElementById('tokenInput').value.trim();
+    if (!token) return toast('请输入 Token');
+    // 测试 token 是否有效
+    fetch('https://api.github.com/repos/lhyhy123/quenuy-blog/contents/content/posts', {
+        headers: { Authorization: 'Bearer ' + token }
+    }).then(r => {
+        if (r.ok) {
+            localStorage.setItem('cms_token', token);
+            showList();
+        } else {
+            toast('Token 无效或无权限（需要 repo 权限）');
+        }
+    }).catch(() => toast('网络错误，请重试'));
+}
+
+function logout() {
+    localStorage.removeItem('cms_token');
+    token = null;
+    document.getElementById('loginView').classList.remove('hidden');
+    document.getElementById('listView').classList.add('hidden');
+}
+
+// ===== 文章列表 =====
+function showList() {
+    document.getElementById('loginView').classList.add('hidden');
+    document.getElementById('editorView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    loadPosts();
+}
+
+function loadPosts() {
+    document.getElementById('postList').innerHTML = '加载中...';
+    if (API_BASE) {
+        fetch(API_BASE + '/api/posts').then(r => r.json()).then(data => {
+            posts = data;
+            renderList();
+        }).catch(() => toast('加载失败'));
+        return;
+    }
+    fetch('https://api.github.com/repos/lhyhy123/quenuy-blog/contents/content/posts', {
+        headers: { Authorization: 'Bearer ' + token }
+    }).then(r => r.json()).then(data => {
+        if (!Array.isArray(data)) { toast('加载失败: ' + (data.message || '未知错误')); return; }
+        const mdFiles = data.filter(f => f.name.endsWith('.md'));
+        // 获取每个文件的内容以解析 frontmatter
+        Promise.all(mdFiles.map(f =>
+            fetch(f.download_url).then(r => r.text()).then(content => {
+                const fm = parseFrontmatter(content);
+                return { name: f.name, sha: f.sha, path: f.path, ...fm };
+            }).catch(() => ({ name: f.name, sha: f.sha, path: f.path, title: f.name, date: '', tags: [] }))
+        )).then(results => {
+            posts = results.sort((a, b) => b.date.localeCompare(a.date));
+            renderList();
+        });
+    }).catch(() => toast('加载失败，请检查网络'));
+}
+
+function parseFrontmatter(content) {
+    const m = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!m) return { title: '无标题', date: '', tags: [], excerpt: '', read_time: '', slug: '', body: content };
+    const fm = {};
+    m[1].split('\n').forEach(line => {
+        const i = line.indexOf(':');
+        if (i === -1) return;
+        const k = line.slice(0, i).trim();
+        let v = line.slice(i + 1).trim();
+        if (v.startsWith('[') && v.endsWith(']')) {
+            v = v.slice(1, -1).split(',').map(s => s.trim().replace(/['"]/g, ''));
+        } else {
+            v = v.replace(/^['"]|['"]$/g, '');
+        }
+        fm[k] = v;
+    });
+    fm.body = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+    return fm;
+}
+
+function renderList() {
+    const el = document.getElementById('postList');
+    if (posts.length === 0) { el.innerHTML = '<div style="text-align:center;color:#8c8690;padding:40px">暂无文章</div>'; return; }
+    el.innerHTML = posts.map(p => `
+        <div class="post-item" onclick="editPost('${p.name}')">
+            <div>
+                <div class="post-item-title">${escapeHtml(p.title || '无标题')}</div>
+                <div class="post-item-meta">${p.date || '无日期'} · ${Array.isArray(p.tags) ? p.tags.join('、') : (p.tags || '')} · ${p.read_time || ''}</div>
+            </div>
+            <div class="post-item-actions">
+                <button onclick="event.stopPropagation();editPost('${p.name}')">编辑</button>
+                <button class="del" onclick="event.stopPropagation();deleteItem('${p.name}', 'post')">删除</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ===== 编辑器 =====
+function newPost() {
+    currentFile = null;
+    window._editMode = 'post';
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('editorView').classList.remove('hidden');
+    document.getElementById('editorTitle').textContent = '写新文章';
+    // 恢复所有字段可见
+    document.querySelectorAll('#editorView .row, #editorView label').forEach(function(el) { el.style.display = ''; });
+    document.getElementById('titleInput').value = '';
+    document.getElementById('dateInput').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('slugInput').value = '';
+    document.getElementById('tagsInput').value = '';
+    document.getElementById('readTimeInput').value = '5 分钟阅读';
+    document.getElementById('excerptInput').value = '';
+    document.getElementById('coverInput').value = '';
+    document.getElementById('bodyInput').value = '';
+}
+
+function editPost(filename) {
+    var p = posts.find(function(p) { return p.name === filename; });
+    if (!p) return;
+    currentFile = filename;
+    window._editMode = 'post';
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('editorView').classList.remove('hidden');
+    // 恢复所有字段可见
+    document.querySelectorAll('#editorView .row, #editorView label').forEach(function(el) { el.style.display = ''; });
+    document.getElementById('editorTitle').textContent = '编辑: ' + (p.title || '');
+    document.getElementById('titleInput').value = p.title || '';
+    document.getElementById('dateInput').value = p.date || '';
+    document.getElementById('slugInput').value = p.slug || '';
+    document.getElementById('tagsInput').value = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
+    document.getElementById('readTimeInput').value = p.read_time || '';
+    document.getElementById('excerptInput').value = p.excerpt || '';
+    document.getElementById('coverInput').value = p.cover || '';
+    document.getElementById('bodyInput').value = p.body || '';
+}
+
+function backToList() {
+    window._editMode = null;
+    document.getElementById('editorView').classList.add('hidden');
+    document.getElementById('listView').classList.remove('hidden');
+    // 恢复字段可见
+    document.querySelectorAll('#editorView .row, #editorView label').forEach(function(el) { el.style.display = ''; });
+    if (currentTab === 'pages') {
+        loadPages();
+    } else {
+        loadPosts();
+    }
+}
+
+// ===== 页面管理 =====
+function loadPages() {
+    document.getElementById('postList').innerHTML = '加载中...';
+    if (API_BASE) {
+        fetch(API_BASE + '/api/pages').then(r => r.json()).then(data => {
+            pages = data;
+            document.getElementById('postList').innerHTML = data.map(function(p){return '<div class="post-item" onclick="editPage(\''+p.name+'\')"><div><div class="post-item-title">'+(p.title||p.name)+'</div><div class="post-item-meta">'+p.name+'</div></div><div class="post-item-actions"><button onclick="event.stopPropagation();editPage(\''+p.name+'\')">编辑</button><button class="del" onclick="event.stopPropagation();deleteItem(\''+p.name+'\',\'page\')">删除</button></div></div>';}).join('');
+        }).catch(function(){toast('加载失败')});
+        return;
+    }
+    fetch('https://api.github.com/repos/lhyhy123/quenuy-blog/contents/content/pages', {
+        headers: { Authorization: 'Bearer ' + token }
+    }).then(r => r.json()).then(data => {
+        if (!Array.isArray(data)) { toast('加载失败: ' + (data.message || '未知错误')); return; }
+        const mdFiles = data.filter(f => f.name.endsWith('.md'));
+        Promise.all(mdFiles.map(f =>
+            fetch(f.download_url).then(r => r.text()).then(content => {
+                const fm = parseFrontmatter(content);
+                return { name: f.name, sha: f.sha, path: f.path, ...fm };
+            })
+        )).then(results => {
+            pages = results;
+            document.getElementById('postList').innerHTML = results.map(p => `
+                <div class="post-item" onclick="editPage('${p.name}')">
+                    <div>
+                        <div class="post-item-title">${escapeHtml(p.title || p.name.replace('.md',''))}</div>
+                        <div class="post-item-meta">${p.name}</div>
+                    </div>
+                    <div class="post-item-actions">
+                        <button onclick="event.stopPropagation();editPage('${p.name}')">编辑</button>
+                        <button class="del" onclick="event.stopPropagation();deleteItem('${p.name}', 'page')">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }).catch(() => toast('加载失败'));
+}
+
+function editPage(filename) {
+    var p = pages.find(p => p.name === filename);
+    if (!p) return;
+    currentFile = filename;
+    document.getElementById('listView').classList.add('hidden');
+    document.getElementById('editorView').classList.remove('hidden');
+    document.getElementById('editorTitle').textContent = '编辑页面: ' + (p.title || filename);
+    document.getElementById('titleInput').value = p.title || '';
+    document.getElementById('dateInput').value = '';
+    document.getElementById('slugInput').value = p.name.replace('.md', '');
+    document.getElementById('tagsInput').value = '';
+    document.getElementById('readTimeInput').value = '';
+    document.getElementById('excerptInput').value = '';
+    document.getElementById('bodyInput').value = p.body || '';
+    // 页面模式隐藏不需要的字段
+    document.querySelectorAll('#editorView .row, #editorView label').forEach(function(el) {
+        var txt = el.textContent || '';
+        if (txt.includes('日期') || txt.includes('URL') || txt.includes('标签') || txt.includes('阅读时长') || txt.includes('摘要')) {
+            el.style.display = 'none';
+        }
+    });
+    document.getElementById('titleInput').parentElement.style.display = '';
+    var bodyLabel = document.querySelector('label[for="bodyInput"]') || document.querySelectorAll('#editorView label')[document.querySelectorAll('#editorView label').length - 1];
+    if (bodyLabel) bodyLabel.style.display = '';
+    document.getElementById('bodyInput').style.display = '';
+    // 标记为页面模式
+    window._editMode = 'page';
+}
+
+function utf8ToBase64(str) {
+    // 使用 TextEncoder 正确编码 UTF-8 到 Base64
+    var encoder = new TextEncoder();
+    var bytes = encoder.encode(str);
+    var binary = '';
+    for (var i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// ===== 保存（文章 + 页面统一入口） =====
+async function savePost() {
+    var isPage = window._editMode === 'page';
+    window._editMode = null;
+
+    var title = document.getElementById('titleInput').value.trim();
+    var date = document.getElementById('dateInput').value;
+    var slug = document.getElementById('slugInput').value.trim();
+    var tagsRaw = document.getElementById('tagsInput').value.trim();
+    var readTime = document.getElementById('readTimeInput').value.trim();
+    var excerpt = document.getElementById('excerptInput').value.trim();
+    var body = document.getElementById('bodyInput').value.trim();
+
+    if (!title) return toast('请输入标题');
+    if (!body) return toast('请输入正文');
+
+    var content, apiPath;
+
+    if (isPage) {
+        // 页面模式：简单的 frontmatter + body
+        content = '---\ntitle: ' + title + '\n---\n\n' + body;
+        apiPath = 'content/pages/' + currentFile;
+    } else {
+        if (!slug) return toast('请输入 URL 别名');
+        var tags = tagsRaw ? tagsRaw.split(/[,，]/).map(function(s) { return s.trim(); }).filter(Boolean) : [];
+        content = '---\ntitle: ' + title + '\ndate: ' + date + '\ntags: [' + tags.join(', ') + ']\nexcerpt: ' + excerpt + '\nread_time: ' + readTime + '\nslug: ' + slug + '\n---\n\n' + body;
+        apiPath = 'content/posts/' + slug + '.md';
+    }
+
+    if (API_BASE) {
+        // 本地后端
+        var resp = await fetch(API_BASE + '/api/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: isPage ? 'page' : 'post',
+                filename: currentFile || (slug + '.md'),
+                title: title, date: date, slug: slug, tags: tagsRaw ? tagsRaw.split(/[,，]/).map(function(s){return s.trim()}).filter(Boolean) : [],
+                excerpt: excerpt, read_time: readTime, cover: document.getElementById('coverInput').value,
+                body: body, page_type: isPage ? (currentFile ? currentFile.replace('.md','') : '') : ''
+            })
+        });
+        if (resp.ok) {
+            localStorage.removeItem('cms_draft');
+            toast('✅ 已保存！本地已构建');
+            backToList();
+        } else {
+            var err = await resp.json().catch(function(){return{}});
+            toast('保存失败: ' + (err.error || '未知错误'));
+        }
+        return;
+    }
+    // GitHub API
+    var apiUrl = 'https://api.github.com/repos/lhyhy123/quenuy-blog/contents/' + apiPath;
+
+    try {
+        var sha = null;
+        if (isPage) {
+            var p = pages.find(function(p) { return p.name === currentFile; });
+            if (p) sha = p.sha;
+        } else {
+            var post = posts.find(function(p) { return p.name === currentFile; });
+            if (post) sha = post.sha;
+        }
+
+        var bodyData = {
+            message: currentFile ? '更新: ' + title : '新文章: ' + title,
+            content: utf8ToBase64(content)
+        };
+        if (sha) bodyData.sha = sha;
+
+        var resp = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData)
+        });
+
+        if (resp.ok) {
+            localStorage.removeItem('cms_draft');
+            toast('✅ 已保存！GitHub Actions 将自动构建上线');
+            backToList();
+        } else {
+            var err = await resp.json().catch(function() { return {}; });
+            var detail = err.message || '';
+            if (err.errors && err.errors.length) {
+                detail += ' | ' + err.errors.map(function(e) { return e.message || e.code || JSON.stringify(e); }).join('; ');
+            }
+            toast('保存失败(' + resp.status + '): ' + detail);
+        }
+    } catch (e) {
+        toast('网络错误: ' + e.message);
+    }
+}
+
+async function deleteItem(filename, type) {
+    var label = type === 'page' ? '页面' : '文章';
+    if (!confirm('确定删除这个' + label + '？此操作不可撤销。')) return;
+    var list = type === 'page' ? pages : posts;
+    var p = list.find(function(item) { return item.name === filename; });
+    if (!p) { toast('找不到该' + label); return; }
+
+    try {
+        var resp = await fetch('https://api.github.com/repos/lhyhy123/quenuy-blog/contents/' + p.path, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: '删除' + label + ': ' + (p.title || filename), sha: p.sha })
+        });
+        if (resp.ok) {
+            toast('已删除');
+            if (type === 'page') loadPages(); else loadPosts();
+        } else {
+            var err = await resp.json().catch(function() { return {}; });
+            toast('删除失败(' + resp.status + '): ' + (err.message || ''));
+        }
+    } catch (e) {
+        toast('网络错误: ' + e.message);
+    }
+}
+
+// ===== 编辑器工具栏 =====
+var bodyInput = document.getElementById('bodyInput');
+
+// 自动保存草稿到 localStorage
+var autoSaveTimer;
+function autoSaveDraft() {
+    var draft = {
+        title: document.getElementById('titleInput').value,
+        date: document.getElementById('dateInput').value,
+        slug: document.getElementById('slugInput').value,
+        tags: document.getElementById('tagsInput').value,
+        readTime: document.getElementById('readTimeInput').value,
+        excerpt: document.getElementById('excerptInput').value,
+        cover: document.getElementById('coverInput').value,
+        body: document.getElementById('bodyInput').value
+    };
+    localStorage.setItem('cms_draft', JSON.stringify(draft));
+    document.getElementById('editorTitle').textContent = document.getElementById('editorTitle').textContent.replace(' 💾', '') + ' 💾';
+}
+bodyInput.addEventListener('input', function () {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSaveDraft, 3000);
+});
+// 离开前提醒
+window.addEventListener('beforeunload', function (e) {
+    if (document.getElementById('editorView').classList.contains('hidden')) return;
+    e.preventDefault(); e.returnValue = '';
+});
+// 恢复草稿
+function restoreDraft() {
+    var draft = localStorage.getItem('cms_draft');
+    if (!draft) return;
+    draft = JSON.parse(draft);
+    if (!draft.title && !draft.body) return;
+    if (confirm('检测到未保存的草稿，是否恢复？')) {
+        document.getElementById('titleInput').value = draft.title || '';
+        document.getElementById('dateInput').value = draft.date || '';
+        document.getElementById('slugInput').value = draft.slug || '';
+        document.getElementById('tagsInput').value = draft.tags || '';
+        document.getElementById('readTimeInput').value = draft.readTime || '';
+        document.getElementById('excerptInput').value = draft.excerpt || '';
+        document.getElementById('coverInput').value = draft.cover || '';
+        document.getElementById('bodyInput').value = draft.body || '';
+    } else {
+        localStorage.removeItem('cms_draft');
+    }
+}
+
+function insertMD(syntax) {
+    var ta = document.getElementById('bodyInput');
+    var start = ta.selectionStart, end = ta.selectionEnd;
+    var before = ta.value.substring(0, start);
+    var sel = ta.value.substring(start, end) || '';
+    var after = ta.value.substring(end);
+    // 在行首插入
+    var lineStart = before.lastIndexOf('\n') + 1;
+    if (lineStart === start || sel === '') {
+        ta.value = before.substring(0, lineStart) + syntax + before.substring(lineStart) + sel + after;
+        ta.selectionStart = ta.selectionEnd = lineStart + syntax.length + sel.length;
+    } else {
+        ta.value = before + syntax + sel + after;
+        ta.selectionStart = start;
+        ta.selectionEnd = end + syntax.length;
+    }
+    ta.focus();
+}
+function wrapMD(wrapper) {
+    var ta = document.getElementById('bodyInput');
+    var start = ta.selectionStart, end = ta.selectionEnd;
+    var sel = ta.value.substring(start, end) || '文字';
+    ta.value = ta.value.substring(0, start) + wrapper + sel + wrapper + ta.value.substring(end);
+    ta.selectionStart = start + wrapper.length;
+    ta.selectionEnd = end + wrapper.length;
+    ta.focus();
+}
+function lineMD(prefix) {
+    var ta = document.getElementById('bodyInput');
+    var start = ta.selectionStart;
+    var before = ta.value.substring(0, start);
+    var lineStart = before.lastIndexOf('\n') + 1;
+    var after = ta.value.substring(start);
+    ta.value = before.substring(0, lineStart) + prefix + before.substring(lineStart) + after;
+    ta.selectionStart = ta.selectionEnd = lineStart + prefix.length + (start - lineStart);
+    ta.focus();
+}
+function insertLink() {
+    var url = prompt('链接地址（https://...）');
+    if (!url) return;
+    var ta = document.getElementById('bodyInput');
+    var start = ta.selectionStart, end = ta.selectionEnd;
+    var sel = ta.value.substring(start, end) || '链接文字';
+    ta.value = ta.value.substring(0, start) + '[' + sel + '](' + url + ')' + ta.value.substring(end);
+    ta.focus();
+}
+function togglePreview() {
+    var ta = document.getElementById('bodyInput');
+    var preview = document.getElementById('previewBox');
+    var btn = document.querySelector('.preview-btn');
+    if (preview.classList.contains('show')) {
+        preview.classList.remove('show');
+        ta.style.display = '';
+        btn.textContent = '👁 预览';
+    } else {
+        // 简单 Markdown→HTML 转换用于预览
+        var md = ta.value;
+        var html = md
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')  // 转义HTML
+            .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+            .replace(/\*(.+?)\*/g, '<i>$1</i>')
+            .replace(/`(.+?)`/g, '<code>$1</code>')
+            .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+            .replace(/^- (.+)$/gm, '<li>$1</li>')
+            .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+            .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank">$1</a>')
+            .replace(/^---$/gm, '<hr>')
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>');
+        html = '<p>' + html + '</p>';
+        html = html.replace(/<li>.*?<\/li>/gs, function(m) { return '<ul>' + m + '</ul>'; });
+        preview.innerHTML = html;
+        preview.classList.add('show');
+        ta.style.display = 'none';
+        btn.textContent = '✏️ 编辑';
+    }
+}
+
+function uploadImage() {
+    if (!API_BASE) { toast('需要本地后端支持'); return; }
+    var input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = async function() {
+        var fd = new FormData();
+        fd.append('file', this.files[0]);
+        var resp = await fetch(API_BASE + '/api/upload', { method: 'POST', body: fd });
+        var data = await resp.json();
+        if (data.ok) {
+            var md = '![](' + data.url + ')';
+            var ta = document.getElementById('bodyInput');
+            ta.value = ta.value.substring(0, ta.selectionStart) + md + ta.value.substring(ta.selectionEnd);
+            toast('图片已插入');
+        }
+    };
+    input.click();
+}
+
+// ===== 背景图管理 =====
+var bgImages = [];
+
+function loadBgImages() {
+    document.getElementById('bgGrid').innerHTML = '加载中...';
+    var bgApiUrl = 'https://api.github.com/repos/lhyhy123/quenuy-blog/contents/public/images/bg';
+    fetch(bgApiUrl, {
+        headers: { Authorization: 'Bearer ' + token }
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (!Array.isArray(data)) { toast('加载失败: ' + (data.message || '未知错误')); return; }
+        bgImages = data.filter(function(f) { return /\.(jpg|jpeg|png|webp)$/i.test(f.name); })
+            .sort(function(a, b) {
+                var na = parseInt((a.name.match(/\d+/) || [0])[0]) || 0;
+                var nb = parseInt((b.name.match(/\d+/) || [0])[0]) || 0;
+                return na - nb;
+            });
+        renderBgGrid();
+    }).catch(function() { toast('加载失败，请检查网络'); });
+}
+
+function renderBgGrid() {
+    var el = document.getElementById('bgGrid');
+    if (bgImages.length === 0) { el.innerHTML = '<div style="text-align:center;color:#8c8690;padding:40px;grid-column:1/-1">暂无背景图，请上传</div>'; return; }
+    el.innerHTML = bgImages.map(function(f) {
+        return '<div class="bg-card">' +
+            '<img class="bg-card-thumb" src="https://raw.githubusercontent.com/lhyhy123/lhyhy123.github.io/main/public/images/bg/' + f.name + '" alt="' + f.name + '" loading="lazy">' +
+            '<div class="bg-card-info">' +
+                '<span class="bg-card-name">' + f.name + '</span>' +
+                '<div class="bg-card-actions">' +
+                    '<button onclick="event.stopPropagation();copyBgUrl(\'' + f.name + '\')" title="复制链接">📋</button>' +
+                    '<button class="del" onclick="event.stopPropagation();deleteBgImage(\'' + f.name + '\', \'' + f.sha + '\')" title="删除">🗑</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function copyBgUrl(filename) {
+    var url = '/images/bg/' + filename;
+    // 复制到剪贴板
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() { toast('已复制: ' + url); });
+    } else {
+        var ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast('已复制: ' + url);
+    }
+}
+
+function uploadBgImage(input) {
+    var file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast('图片不能超过 5MB'); input.value = ''; return; }
+    if (!/\.(jpg|jpeg|png|webp)$/i.test(file.name)) { toast('仅支持 jpg/png/webp 格式'); input.value = ''; return; }
+
+    // 找下一个可用编号
+    var maxNum = 0;
+    bgImages.forEach(function(f) {
+        var m = f.name.match(/^bg(\d+)\./i);
+        if (m) { var n = parseInt(m[1]); if (n > maxNum) maxNum = n; }
+    });
+    var newName = 'bg' + (maxNum + 1) + '.' + (file.name.split('.').pop().toLowerCase());
+
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        var base64 = ev.target.result.split(',')[1];
+        var apiUrl = 'https://api.github.com/repos/lhyhy123/quenuy-blog/contents/public/images/bg/' + newName;
+        fetch(apiUrl, {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: '上传背景图: ' + newName,
+                content: base64
+            })
+        }).then(function(r) { return r.json().then(function(data) { return {ok: r.ok, data: data}; }); })
+          .then(function(result) {
+            if (result.ok) {
+                toast('✅ 背景图 ' + newName + ' 已上传！GitHub Actions 构建后生效');
+                input.value = '';
+                loadBgImages();
+            } else {
+                toast('上传失败: ' + (result.data.message || '未知错误'));
+                input.value = '';
+            }
+        }).catch(function(e) { toast('网络错误: ' + e.message); input.value = ''; });
+    };
+    reader.readAsDataURL(file);
+}
+
+function deleteBgImage(filename, sha) {
+    if (!confirm('确定删除 ' + filename + ' ？此操作不可撤销。')) return;
+    var apiUrl = 'https://api.github.com/repos/lhyhy123/quenuy-blog/contents/public/images/bg/' + filename;
+    fetch(apiUrl, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: '删除背景图: ' + filename, sha: sha })
+    }).then(function(r) { return r.json().then(function(data) { return {ok: r.ok, data: data}; }); })
+      .then(function(result) {
+        if (result.ok) {
+            toast('✅ 已删除 ' + filename);
+            loadBgImages();
+        } else {
+            toast('删除失败: ' + (result.data.message || '未知错误'));
+        }
+    }).catch(function(e) { toast('网络错误: ' + e.message); });
+}
+
+function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

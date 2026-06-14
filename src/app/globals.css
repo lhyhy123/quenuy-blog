@@ -1,0 +1,217 @@
+@import "tailwindcss";
+
+/* 1. 暗黑模式变体 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 2. 基础环境 + 液态玻璃层级 */
+@layer base {
+  :root {
+    --font-serif: var(--font-noto-serif-sc), "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+    --font-mono: var(--font-geist-mono), "JetBrains Mono", monospace;
+    /* 默认 accent（在 ColorExtractor 运行时被覆盖） */
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --accent-soft: rgba(99, 102, 241, 0.08);
+    --accent-glow: rgba(99, 102, 241, 0.18);
+    --accent-dark: #818cf8;
+    --accent-dark-glow: rgba(129, 140, 248, 0.22);
+  }
+
+  body {
+    @apply transition-colors duration-1000 text-slate-900 bg-slate-50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    @apply text-slate-100 bg-slate-950;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  /* 多层液态玻璃层级 */
+  .glass-deep {
+    @apply bg-white/10 dark:bg-slate-900/20;
+    backdrop-filter: blur(80px) saturate(2.5);
+    -webkit-backdrop-filter: blur(80px) saturate(2.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.6),
+      inset 0 -1px 0 rgba(255,255,255,0.1),
+      0 8px 40px rgba(0,0,0,0.08);
+  }
+  .glass-card {
+    background: rgba(255,255,255, var(--glass-opacity, 0.2));
+    backdrop-filter: blur(30px) saturate(2.5) brightness(1.1);
+    -webkit-backdrop-filter: blur(30px) saturate(2.5) brightness(1.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.7),
+      inset 0 -2px 6px rgba(0,0,0,0.03),
+      0 4px 24px rgba(0,0,0,0.08),
+      0 0 0 0.5px rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .glass-nav {
+    background: rgba(255,255,255, var(--glass-opacity, 0.25));
+    backdrop-filter: blur(40px) saturate(2.5) brightness(1.15);
+    -webkit-backdrop-filter: blur(40px) saturate(2.5) brightness(1.15);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.7),
+      inset 0 -1px 0 rgba(255,255,255,0.05),
+      0 2px 20px rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  /* 深色模式下增强 glass 效果 */
+  .dark .glass-card {
+    background: rgba(30,41,59, var(--glass-opacity, 0.25));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.15),
+      inset 0 -2px 6px rgba(0,0,0,0.15),
+      0 4px 24px rgba(0,0,0,0.25),
+      0 0 0 0.5px rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.06);
+  }
+  .dark .glass-nav {
+    background: rgba(15,23,42, var(--glass-opacity, 0.3));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      inset 0 -1px 0 rgba(0,0,0,0.15),
+      0 2px 20px rgba(0,0,0,0.25);
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+}
+
+/* 3. 滚动条 */
+@layer base {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--accent-soft); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+}
+
+/* 4. 文章排版 */
+@layer base {
+  .prose {
+    @apply max-w-none text-slate-800 dark:text-slate-200;
+    font-family: var(--font-serif);
+  }
+  .prose h1 { font-size: 2.2rem !important; font-weight: 950; margin: 2rem 0 1rem; line-height: 1.2; }
+  .prose h2 { font-size: 1.6rem !important; font-weight: 800; margin: 1.5rem 0 0.8rem; }
+  .prose h3 { font-size: 1.3rem !important; font-weight: 700; margin: 1rem 0 0.5rem; }
+  .prose p { font-size: 1.1rem !important; line-height: 2; margin-bottom: 1.2rem; text-indent: 2em; }
+  .prose p:first-of-type { text-indent: 0; }
+  .prose p:first-of-type::first-letter {
+    float: left; font-size: 3.5em; font-weight: 900; line-height: 0.8;
+    padding-right: 0.15em; color: var(--accent);
+  }
+  .prose blockquote {
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 1rem 1.5rem; margin: 1.5rem 0;
+    border-radius: 0 1.25rem 1.25rem 0;
+    font-style: italic; color: #64748b;
+  }
+  .dark .prose blockquote { border-left-color: var(--accent-dark); background: var(--accent-dark-glow); color: #94a3b8; }
+  .prose pre { background: #282c34; color: #abb2bf; padding: 1rem; border-radius: 0.75rem; overflow-x: auto; }
+  .prose code { background: var(--accent-soft); color: var(--accent); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.85em; }
+  .prose pre code { background: transparent; padding: 0; color: inherit; }
+  .prose img { border-radius: 1rem; max-width: 100%; margin: 1.5rem auto; display: block; }
+  .prose a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed var(--accent); }
+  .prose a:hover { color: var(--accent-light); border-bottom-style: solid; }
+  .dark .prose a { color: var(--accent-dark); border-bottom-color: var(--accent-dark); }
+}
+
+/* 5. 渐变流动动画 */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 6. 骨架屏同步呼吸光（BiliPai Skeleton Shimmer） */
+/* ── CSS @property 驱动全局 pulse 变量，FastOutSlowInEasing 缓动 ── */
+@property --pulse {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@keyframes pulse-breath {
+  0%   { --pulse: 0; }
+  50%  { --pulse: 1; }
+  100% { --pulse: 0; }
+}
+/* 全局 pulse —— 所有骨架组件读取同一值，实现 BiliPai 同步呼吸 */
+:root {
+  animation: pulse-breath 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* ── 通用骨架 ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(148 163 184 / calc(0.06 + var(--pulse, 0) * 0.08)) 0%,
+    rgb(148 163 184 / calc(0.08 + var(--pulse, 0) * 0.14)) 40%,
+    rgb(148 163 184 / calc(0.06 + var(--pulse, 0) * 0.08)) 100%
+  );
+  background-size: 200% 100%;
+}
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(148 163 184 / calc(0.04 + var(--pulse, 0) * 0.06)) 0%,
+    rgb(148 163 184 / calc(0.06 + var(--pulse, 0) * 0.10)) 40%,
+    rgb(148 163 184 / calc(0.04 + var(--pulse, 0) * 0.06)) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ── 骨架：圆形（头像、唱片封面等） ── */
+.skeleton-circle {
+  border-radius: 50%;
+}
+.skeleton-circle::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: inherit;
+}
+
+/* 7. View Transitions —— 文章卡片共享元素过渡（BiliPai Shared Element） */
+@keyframes article-cover-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes article-cover-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.95); }
+}
+::view-transition-old(article-cover) {
+  animation: article-cover-out 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+::view-transition-new(article-cover) {
+  animation: article-cover-in 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* 页面级过渡 */
+@keyframes page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes page-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+::view-transition-old(root) {
+  animation: page-out 0.2s ease-out both;
+}
+::view-transition-new(root) {
+  animation: page-in 0.25s ease-out 0.1s both;
+}

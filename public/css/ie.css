@@ -1,0 +1,18 @@
+/* IE/WinXP 降级样式 - 牺牲视觉效果，保证内容可读 */
+body { background: #faf8f5; color: #2d2830; font: 16px/1.8 'Microsoft YaHei', 'Noto Sans SC', sans-serif; }
+.navbar, .sidebar, .footer { background: #f5f0eb; position: relative; }
+.article-card, .archive-item, .friend-card, .device-card { background: #fff; border: 1px solid #ddd; margin-bottom: 12px; padding: 16px; }
+.hero { background: none; min-height: auto; padding: 40px 20px; text-align: center; }
+.hero-title .name { font-size: 2rem; color: #2d2830; }
+.hero-title .greeting { font-size: 1rem; color: #666; }
+.nav-links a, .card-link, .cta-link { color: #7c6fa0; }
+.post-body { font: 16px/2 'Microsoft YaHei', serif; }
+.post-body h2 { font-size: 1.3rem; margin: 30px 0 12px; }
+a { color: #7c6fa0; }
+.card-tag { background: #f0ecf5; color: #7c6fa0; padding: 2px 8px; border-radius: 10px; font-size: .8rem; }
+.monet-orbs, .bg-layer, .reading-progress, .back-to-top, .pull-container { display: none; }
+.post-container, .archive-container, .articles, .container { max-width: 720px; margin: 0 auto; padding: 40px 16px; }
+.article-grid { display: block; }
+.friends-grid, .devices-grid { display: block; }
+.friend-card, .device-card { display: block; margin-bottom: 8px; }
+.sidebar { display: none; }

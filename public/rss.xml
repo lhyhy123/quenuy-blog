@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+    <title>却nuy的个人博客</title>
+    <link>https://quenuy.top</link>
+    <description>读西塞罗，写代码。没有赋能和闭环，只有一个人慢慢想清楚的东西。</description>
+    <language>zh-CN</language>
+    <lastBuildDate>Sun, 14 Jun 2026 09:27:56 GMT</lastBuildDate>
+    <atom:link href="https://quenuy.top/rss.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+        <title>阿尔都塞相关哲学思想解析</title>
+        <link>https://quenuy.top/posts/althusser-philosophy/</link>
+        <guid>https://quenuy.top/posts/althusser-philosophy/</guid>
+        <pubDate>Fri, 12 Jun 2026 00:00:00 GMT</pubDate>
+        <description><![CDATA[<p>从总问题到认识论断裂，从意识形态批判到症候阅读法——梳理阿尔都塞保卫马克思的理论路径，理解他如何在人本主义泛滥的时代重新确立马克思主义的科学性。</p>]]></description>
+        <category>哲学</category>
+        <category>马克思主义</category>
+    </item>
+    <item>
+        <title>读西塞罗《论法律》：自然法如何在今天回响</title>
+        <link>https://quenuy.top/posts/cicero-on-laws/</link>
+        <guid>https://quenuy.top/posts/cicero-on-laws/</guid>
+        <pubDate>Sun, 24 May 2026 00:00:00 GMT</pubDate>
+        <description><![CDATA[<p>西塞罗说&quot;官员是说话的法律，法律是不说话的官员&quot;。两千年后重读，这句话仍然像一面镜子，照出法治与权力的永恒张力。从自然法到宗教法再到官职法，一部古典著作如何映照今天。</p>]]></description>
+        <category>阅读</category>
+        <category>哲学</category>
+    </item>
+</channel>
+</rss>
